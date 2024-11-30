@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -85,14 +87,7 @@ WSGI_APPLICATION = 'todo_list.wsgi.application'
 
 # For PostgreSQL database hosted at render.com
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'todo_db_w2mx',
-        'USER': 'my_user',
-        'PASSWORD': 'gQLC6j4yr8PO9IUPfKcDYWK1VhtwGSwo',
-        'HOST': 'dpg-ct5c6bl6l47c73fdt1u0-a.singapore-postgres.render.com',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.parse(config('DATABASE_URL'))
 }
 
 # Password validation
