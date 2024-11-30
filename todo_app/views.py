@@ -1,53 +1,53 @@
-from django.shortcuts import render
-from rest_framework import views
-from rest_framework.response import Response
-from rest_framework import status
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Todo
-from .serializers import TodoSerializer
 
-# Create your views here.
+def home_view(request):
+    tasks = Todo.objects.all()
+    return render(request, 'index.html', {'tasks': tasks})
 
-class TodoListView(views.APIView):
-    def get(self, request):
-        todos = Todo.objects.all()
-        serializer = TodoSerializer(todos, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+def create_task_view(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        Todo.objects.create(title=title, description=description)
+        return redirect('home')
+    return redirect('home')
 
-    def post(self, request):
-        serializer = TodoSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+def update_task_view(request, pk):
+    if request.method == 'POST':
+        task = get_object_or_404(Todo, pk=pk)
+        task.isCompleted = True
+        task.save()
+        return redirect('home')
+    return redirect('home')
 
-class TodoDetailView(views.APIView):
-    def get(self, request, pk):
-        todo = Todo.objects.get(pk=pk)
-        serializer = TodoSerializer(todo)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+def delete_task_view(request, pk):
+    if request.method == 'POST':
+        task = get_object_or_404(Todo, pk=pk)
+        task.delete()
+        return redirect('home')
+    return redirect('home')
 
-    def put(self, request, pk):
-        todo = Todo.objects.get(pk=pk)
-        serializer = TodoSerializer(todo, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def patch(self, request, pk):
-        todo = Todo.objects.get(pk=pk)
-        serializer = TodoSerializer(todo, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        todo = Todo.objects.get(pk=pk)
-        todo.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-class TodoDeleteAllView(views.APIView):
-    def delete(self, request):
+def delete_all_tasks_view(request):
+    if request.method == 'POST':
         Todo.objects.all().delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return redirect('home')
+    return redirect('home')
+
+def update_task_details_view(request, pk):
+    task = Todo.objects.get(pk=pk)
+
+    if request.method == 'POST':
+        new_title = request.POST['title']
+        new_description = request.POST['description']
+
+        if new_title:
+            task.title = new_title
+        if new_description:
+            task.description = new_description
+
+        task.save()
+        return redirect('home')
+
+    # if not post request then render the update page with the current task details
+    return render(request, 'update.html', {'task': task})

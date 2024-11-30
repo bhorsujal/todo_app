@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do App</title>
+</head>
+<body>
+    <h1>To-Do App</h1>
+
+    <div>
+        <h2>Create New Task</h2>
+        <form method="POST" action="{% url 'todo-list' %}">
+            {% csrf_token %}
+            <input type="text" name="title" placeholder="Title" required>
+            <input type="text" name="description" placeholder="Description">
+            <button type="submit">Add Task</button>
+        </form>
+    </div>
+
+    <div>
+        <h2>Tasks</h2>
+        <ul>
+            {% for task in tasks %}
+                <li>
+                    {{ task.title }} - {{ task.description }} 
+                    {% if task.isCompleted %}
+                        Completed
+                    {% else %}
+                        <form method="POST" action="{% url 'todo-update' task.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Mark as Completed</button>
+                        </form>
+                    {% endif %}
+                    <form method="POST" action="{% url 'todo-delete' task.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit">Delete</button>
+                    </form>
+                    <a href="{% url 'todo-update-details' task.id %}">Edit Details</a>
+                </li>
+            {% empty %}
+                <p>No tasks available.</p>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div>
+        <form method="POST" action="{% url 'todo-delete-all' %}">
+            {% csrf_token %}
+            <button type="submit">Delete All Tasks</button>
+        </form>
+    </div>
+</body>
+</html>
